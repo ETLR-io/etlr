@@ -1,5 +1,10 @@
 # ETLR
 
+[![image](https://img.shields.io/pypi/v/etlr.svg)](https://pypi.python.org/pypi/etlr)
+[![image](https://img.shields.io/pypi/l/etlr.svg)](https://github.com/ETLR-io/etlr/blob/main/LICENSE)
+[![image](https://img.shields.io/pypi/pyversions/etlr.svg)](https://pypi.python.org/pypi/etlr)
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?logo=discord&logoColor=white)](https://discord.gg/VtMWjh6u3D)
+
 Command-line interface for deploying and managing [ETLR](https://etlr.io) workflows.
 
 **Quick reference:** See [QUICKSTART.md](QUICKSTART.md) for command cheat sheet.
