@@ -1,0 +1,24 @@
+# Include documentation and license
+include README.md
+include QUICKSTART.md
+include LICENSE
+
+# Include configuration
+include pyproject.toml
+
+# Exclude development files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+recursive-exclude tools *
+recursive-exclude tests *
+recursive-exclude .pytest_cache *
+recursive-exclude .ruff_cache *
+recursive-exclude __pycache__ *
+recursive-exclude *.pyc *
+recursive-exclude *.pyo *
+recursive-exclude *.egg-info *
+
+# Exclude IDE and system files
+recursive-exclude .vscode *
+recursive-exclude .idea *
+exclude .DS_Store

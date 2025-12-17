@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-json
+      - id: mixed-line-ending
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        name: black (120)
+        args: ["--line-length", "120"]
+        language_version: python3.13
+  - repo: local
+    hooks:
+      - id: auto-version-bump
+        name: auto version bump
+        entry: python tools/auto_version_bump.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: ruff-lint
+        name: ruff lint
+        entry: ruff check . --fix
+        language: system
+        pass_filenames: false
+      - id: pytest-fast
+        name: pytest fast
+        entry: pytest -q
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

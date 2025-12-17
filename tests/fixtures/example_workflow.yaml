@@ -1,0 +1,34 @@
+workflow:
+  name: example-workflow
+  stage: ${env:STAGE, dev}
+  description: Example workflow demonstrating environment variable management
+
+  environment:
+    - name: DATABASE_URL
+      secret: true
+    - name: API_KEY
+      secret: true
+    - name: API_ENDPOINT
+      secret: false
+    - name: LOG_LEVEL
+      secret: false
+    - name: MAX_RETRIES
+
+  input:
+    type: http_webhook
+    port: 8080
+
+  steps:
+    - type: http_call
+      url: ${env:API_ENDPOINT}/data
+      headers:
+        Authorization: "Bearer ${env:API_KEY}"
+    - type: python_function
+      code: |
+        def function(event) -> dict:
+            import os
+            event['log_level'] = os.getenv('LOG_LEVEL', 'info')
+            event['max_retries'] = int(os.getenv('MAX_RETRIES', '3'))
+            return event
+    - type: print
+      message: "Processed with log level: ${env:LOG_LEVEL}"
