@@ -417,6 +417,92 @@ def status(
 
 
 @cli.command()
+@click.option("--id", "workflow_id", help="Workflow ID")
+@click.option("--name", help="Workflow name")
+@click.option("--stage", help="Workflow stage (prod/dev)")
+@click.option("--lines", "-n", default=100, help="Number of recent log lines to fetch (default: 100)")
+@click.option("--raw", is_flag=True, help="Output raw logs without formatting")
+@click.pass_context
+def logs(
+    ctx: click.Context,
+    workflow_id: Optional[str],
+    name: Optional[str],
+    stage: Optional[str],
+    lines: int,
+    raw: bool,
+) -> None:
+    """View workflow execution logs.
+
+    Provide either --id or both --name and --stage.
+
+    Examples:
+        etlr logs --name my-workflow --stage prod
+        etlr logs --id workflow-uuid --lines 200
+        etlr logs --name my-workflow --stage prod --raw
+    """
+    client = get_client(ctx.obj.get("api_key"))
+    try:
+        result = client.get_logs(workflow_id=workflow_id, name=name, stage=stage, tail_lines=lines)
+
+        # Check for workflow not found
+        if result.get("workflow_not_found"):
+            click.echo(click.style(f"✗ {result.get('message', 'Workflow not found')}", fg="red"), err=True)
+            sys.exit(1)
+
+        # Get the logs string
+        logs_str = result.get("logs", "")
+
+        if not logs_str or logs_str.strip() == "":
+            click.echo(click.style("No logs available for this workflow.", fg="yellow"))
+            return
+
+        # Output logs
+        if raw:
+            # Raw output - just print the logs as-is
+            click.echo(logs_str)
+        else:
+            # Pretty formatted output with colors
+            identifier = workflow_id if workflow_id else f"{name}/{stage}"
+            click.echo(click.style(f"=== Logs for {identifier} (last {lines} lines) ===\n", fg="cyan", bold=True))
+
+            # Split logs into lines and colorize by level
+            log_lines = logs_str.split("\n")
+            for line in log_lines:
+                if not line.strip():
+                    continue
+
+                # Parse log line: timestamp level message
+                parts = line.split(None, 2)  # Split on whitespace, max 3 parts
+                if len(parts) >= 3:
+                    timestamp, level, message = parts[0], parts[1], parts[2] if len(parts) > 2 else ""
+
+                    # Color code by level
+                    level_upper = level.upper()
+                    if "ERROR" in level_upper or "FATAL" in level_upper:
+                        level_color = "red"
+                    elif "WARN" in level_upper:
+                        level_color = "yellow"
+                    elif "INFO" in level_upper:
+                        level_color = "blue"
+                    elif "DEBUG" in level_upper:
+                        level_color = "white"
+                    else:
+                        level_color = "white"
+
+                    click.echo(
+                        f"{click.style(timestamp, dim=True)} "
+                        f"[{click.style(level_upper, fg=level_color)}] "
+                        f"{message}"
+                    )
+                else:
+                    # Malformed line, just print it
+                    click.echo(line)
+
+    except APIError as e:
+        handle_api_error(e)
+
+
+@cli.command()
 @click.option("--id", "workflow_id", required=True, help="Workflow ID")
 @click.option("--format", "output_format", default="json", type=click.Choice(["json"]), help="Output format")
 @click.pass_context

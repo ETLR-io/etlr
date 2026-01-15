@@ -251,3 +251,56 @@ class WorkflowsClient:
         """
         payload = {"action": "restore_version", "workflow_id": workflow_id, "version": version}
         return self._request(payload)
+
+    def get_logs(
+        self,
+        workflow_id: Optional[str] = None,
+        name: Optional[str] = None,
+        stage: Optional[str] = None,
+        tail_lines: int = 100,
+        org_id: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Get workflow execution logs.
+
+        Args:
+            workflow_id: Workflow UUID (if provided, name/stage are ignored)
+            name: Workflow name (requires stage)
+            stage: Workflow stage (requires name)
+            tail_lines: Number of log lines to return from the end (default: 100)
+            org_id: Organization UUID (optional, may be inferred from API key)
+
+        Returns:
+            Dictionary with 'workflow_id' and 'logs' (string) or error info
+
+        Example response:
+            {
+                "workflow_id": "uuid",
+                "logs": "2023-10-27T10:00:00Z INFO Starting workflow...\\n..."
+            }
+
+            Or if workflow not found:
+            {
+                "workflow_not_found": true,
+                "message": "Workflow not found"
+            }
+        """
+        if workflow_id:
+            payload = {
+                "action": "get_logs",
+                "workflow_id": workflow_id,
+                "query_params": {"tail_lines": tail_lines},
+            }
+        elif name and stage:
+            payload = {
+                "action": "get_logs",
+                "name": name,
+                "stage": stage,
+                "query_params": {"tail_lines": tail_lines},
+            }
+        else:
+            raise APIError("Must provide either workflow_id or both name and stage")
+
+        if org_id:
+            payload["org_id"] = org_id
+
+        return self._request(payload)
