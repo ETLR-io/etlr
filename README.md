@@ -32,7 +32,7 @@ pip install etlr
 ### Get Your API Key
 
 Get your API key from the ETLR dashboard:
-👉 **https://app.etlr.io/developer**
+**https://app.etlr.io/developer**
 
 ### Recommended: Environment Variable
 
@@ -405,10 +405,10 @@ etlr logs --name my-workflow --stage prod --raw
 ```
 
 Output features:
-- 🎨 **Color-coded log levels** (ERROR=red, WARN=yellow, INFO=blue, DEBUG=white)
-- 🕒 **Timestamps** for each log entry
-- 📊 **Formatted display** showing level and message
-- 📄 **Raw mode** for piping to other tools
+- **Color-coded log levels** (ERROR=red, WARN=yellow, INFO=blue, DEBUG=white)
+- **Timestamps** for each log entry
+- **Formatted display** showing level and message
+- **Raw mode** for piping to other tools
 
 Example output:
 ```
