@@ -32,7 +32,7 @@ pip install etlr
 ### Get Your API Key
 
 Get your API key from the ETLR dashboard:
-👉 **https://app.etlr.io/developer**
+**https://app.etlr.io/developer**
 
 ### Recommended: Environment Variable
 
@@ -386,6 +386,40 @@ Output shows health status with color coding:
 - 🟢 Green: Running normally
 - 🟡 Yellow: Paused or warning
 - 🔴 Red: Error or stopped
+
+### View Logs
+
+View workflow execution logs to debug issues or monitor activity.
+
+```bash
+# View recent logs (last 100 lines by default)
+etlr logs --name my-workflow --stage prod
+etlr logs --id <workflow-uuid>
+
+# Specify number of lines
+etlr logs --name my-workflow --stage prod --lines 200
+etlr logs --id <workflow-uuid> -n 500
+
+# Raw output (no formatting)
+etlr logs --name my-workflow --stage prod --raw
+```
+
+Output features:
+- **Color-coded log levels** (ERROR=red, WARN=yellow, INFO=blue, DEBUG=white)
+- **Timestamps** for each log entry
+- **Formatted display** showing level and message
+- **Raw mode** for piping to other tools
+
+Example output:
+```
+=== Logs for my-workflow/prod (last 100 lines) ===
+
+2024-01-15T10:00:00Z [INFO] Workflow started
+2024-01-15T10:00:01Z [DEBUG] Processing event data
+2024-01-15T10:00:02Z [INFO] HTTP request completed successfully
+2024-01-15T10:00:03Z [WARN] Rate limit approaching
+2024-01-15T10:00:04Z [ERROR] Failed to connect to database
+```
 
 ### Delete Workflow
 

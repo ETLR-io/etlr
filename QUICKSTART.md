@@ -31,6 +31,11 @@ etlr stop --name my-workflow --stage prod
 # Status
 etlr status --name my-workflow --stage prod
 
+# Logs (view execution logs)
+etlr logs --name my-workflow --stage prod
+etlr logs --id <workflow-uuid> --lines 200
+etlr logs --name my-workflow --stage prod --raw
+
 # Delete
 etlr delete --name my-workflow --stage prod --yes
 

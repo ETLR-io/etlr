@@ -516,3 +516,69 @@ def test_restore_version_skip_confirmation(runner: CliRunner, mock_client) -> No
     result = runner.invoke(cli, ["--api-key", "test-key", "restore", "--id", "123", "--version", "2", "--yes"])
     assert result.exit_code == 0
     mock_instance.restore_version.assert_called_once_with(workflow_id="123", version=2)
+
+
+def test_logs_command(runner: CliRunner, mock_client) -> None:
+    """Test logs command."""
+    mock_instance = MagicMock()
+    mock_instance.get_logs.return_value = {
+        "workflow_id": "123",
+        "logs": "2024-01-15T10:00:00Z INFO Workflow started\n2024-01-15T10:00:01Z ERROR Something failed\n",
+    }
+    mock_client.return_value = mock_instance
+
+    result = runner.invoke(cli, ["--api-key", "test-key", "logs", "--id", "123"])
+    assert result.exit_code == 0
+    assert "Workflow started" in result.output
+    assert "Something failed" in result.output
+    mock_instance.get_logs.assert_called_once_with(workflow_id="123", name=None, stage=None, tail_lines=100)
+
+
+def test_logs_command_with_lines(runner: CliRunner, mock_client) -> None:
+    """Test logs command with custom line count."""
+    mock_instance = MagicMock()
+    mock_instance.get_logs.return_value = {"workflow_id": "123", "logs": "2024-01-15T10:00:00Z INFO Test log\n"}
+    mock_client.return_value = mock_instance
+
+    result = runner.invoke(
+        cli, ["--api-key", "test-key", "logs", "--name", "test", "--stage", "prod", "--lines", "200"]
+    )
+    assert result.exit_code == 0
+    mock_instance.get_logs.assert_called_once_with(workflow_id=None, name="test", stage="prod", tail_lines=200)
+
+
+def test_logs_command_raw_output(runner: CliRunner, mock_client) -> None:
+    """Test logs command with raw output."""
+    mock_instance = MagicMock()
+    log_text = "2024-01-15T10:00:00Z INFO Test log\n"
+    mock_instance.get_logs.return_value = {"workflow_id": "123", "logs": log_text}
+    mock_client.return_value = mock_instance
+
+    result = runner.invoke(cli, ["--api-key", "test-key", "logs", "--id", "123", "--raw"])
+    assert result.exit_code == 0
+    assert result.output == log_text + "\n"  # Click adds a newline
+    mock_instance.get_logs.assert_called_once()
+
+
+def test_logs_command_workflow_not_found(runner: CliRunner, mock_client) -> None:
+    """Test logs command when workflow not found."""
+    mock_instance = MagicMock()
+    mock_instance.get_logs.return_value = {"workflow_not_found": True, "message": "Workflow not found"}
+    mock_client.return_value = mock_instance
+
+    result = runner.invoke(cli, ["--api-key", "test-key", "logs", "--id", "999"])
+    assert result.exit_code == 1
+    assert "Workflow not found" in result.output
+    mock_instance.get_logs.assert_called_once()
+
+
+def test_logs_command_no_logs(runner: CliRunner, mock_client) -> None:
+    """Test logs command when no logs available."""
+    mock_instance = MagicMock()
+    mock_instance.get_logs.return_value = {"workflow_id": "123", "logs": ""}
+    mock_client.return_value = mock_instance
+
+    result = runner.invoke(cli, ["--api-key", "test-key", "logs", "--id", "123"])
+    assert result.exit_code == 0
+    assert "No logs available" in result.output
+    mock_instance.get_logs.assert_called_once()
